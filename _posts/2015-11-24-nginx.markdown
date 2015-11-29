@@ -1,0 +1,7 @@
+---
+layout: post
+---
+
+1 Since access_log in one block overrides any such directives in outer blocks, you have to copy and paste the directive from the outer block into the inner block if you need to log twice in an inner bock.
+
+2 $request_body: This variable(0.7.58+) contains the body of the request. The significance of this variable appears in locations with directives proxy_pass or fastcgi_pass.
