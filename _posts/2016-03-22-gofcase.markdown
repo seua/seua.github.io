@@ -1,1161 +1,1162 @@
-摘自：http://blog.csdn.net/lifuxiangcaohui/article/details/8065059
-
-
-
-
-
-设计模式；
-一个程序员对设计模式的理解:
-“不懂”为什么要把很简单的东西搞得那么复杂。后来随着软件开发经验的增加才开始明白我所看到的“复杂”恰恰就是设计模式的精髓所在，我所理解的“简单”就是一把钥匙开一把锁的模式，目的仅仅是着眼于解决现在的问题，而设计模式的“复杂”就在于它是要构造一个“万能钥匙”，目的是提出一种对所有锁的开锁方案。在真正理解设计模式之前我一直在编写“简单”的代码.
-这个“简单”不是功能的简单，而是设计的简单。简单的设计意味着缺少灵活性，代码很钢硬，只在这个项目里有用，拿到其它的项目中就是垃圾，我将其称之为“一次性代码”。
--->要使代码可被反复使用,请用'设计模式'对你的代码进行设计.
-很多我所认识的程序员在接触到设计模式之后，都有一种相见恨晚的感觉，有人形容学习了设计模式之后感觉自己好像已经脱胎换骨，达到了新的境界，还有人甚至把是否了解设计模式作为程序员划分水平的标准。
-我们也不能陷入模式的陷阱，为了使用模式而去套模式，那样会陷入形式主义。我们在使用模式的时候，一定要注意模式的意图（intent），而不 要过多的去关注模式的实现细节，因为这些实现细节在特定情况下，可能会发生一些改变。不要顽固地认为设计模式一书中的类图或实现代码就代表了模式本身。
-
-设计原则：(重要)
-1.
-逻辑代码独立到单独的方法中，注重封装性--易读，易复用。
-不要在一个方法中，写下上百行的逻辑代码。把各小逻辑代码独立出来，写于其它方法中，易读其可重复调用。
-2.
-写类，写方法，写功能时，应考虑其移植性，复用性：防止一次性代码！
-是否可以拿到其它同类事物中应该？是否可以拿到其它系统中应该？
-3.
-熟练运用继承的思想：
-找出应用中相同之处，且不容易发生变化的东西，把它们抽取到抽象类中，让子类去继承它们；
-继承的思想，也方便将自己的逻辑建立于别人的成果之上。如ImageField extends JTextField；
-熟练运用接口的思想：
-找出应用中可能需要变化之处，把它们独立出来，不要和那些不需要变化的代码混在一起。
-
-把很简单的东西搞得那么复杂，一次性代码，设计模式优势的实例说明：（策略模式）
-说明：
-模拟鸭子游戏的应用程序，要求：游戏中会出现各种颜色外形的鸭子，一边游泳戏水，一边呱呱叫。
-第一种方法：（一次性代码）
-直接编写出各种鸭子的类：MallardDuck//野鸭，RedheadDuck//红头鸭，各类有三个方法：
-quack()：叫的方法
-swim()：游水的方法
-display()：外形的方法
-第二种方法：运用继承的特性，将其中共同的部分提升出来，避免重复编程。
-即：设计一个鸭子的超类（Superclass）,并让各种鸭子继承这个超类。
-public class Duck{
-     public void quack(){  //呱呱叫
-              System.out.println("呱呱叫");
-      }
-     public void swim(){   //游泳
-            System.out.println(" 游泳");
-      }    
-     public  abstratact void display(); /*因为外观不一样，让子类自己去决定了。*/
-}
-对于它的子类只需简单的继承就可以了，并实现自己的display()方法。
-//野鸭
- public class MallardDuck extends Duck{
-     public void display(){
-          System.out.println("野鸭的颜色...");
-   }
- }
-//红头鸭
- public class RedheadDuck extends Duck{
-     public void display(){
-          System.out.println("红头鸭的颜色...");
-   }
-}
-不幸的是，现在客户又提出了新的需求，想让鸭子飞起来。这个对于我们OO程序员，在简单不过了，在超类中在加一
-个方法就可以了。
-public class Duck{
-     public void quack(){  //呱呱叫
-              System.out.println("呱呱叫");
-      }
-     public void swim(){   //游泳
-            System.out.println(" 游泳");
-    }    
-    public  abstract void display(); /*因为外观不一样，让子类自己去决定了。*/
-   public void fly(){
-
-    System.out.println("飞吧！鸭子"); 
-  }
-}
-对于不能飞的鸭子，在子类中只需简单的覆盖。
-//残废鸭
- public class DisabledDuck extends Duck{
-     public void display(){
-          System.out.println("残废鸭的颜色...");
-   }
-   public void fly(){
-    //覆盖，变成什么事都不做。 
-  }
-} 
-其它会飞的鸭子不用覆盖。
-这样所有的继承这个超类的鸭子都会fly了。但是问题又出来了，客户又提出有的鸭子会飞，有的不能飞。
->>>>>>点评:
->>>>>>对于上面的设计，你可能发现一些弊端，如果超类有新的特性，子类都必须变动，这是我们开发最不喜欢看到的，一个类变让另一个类也跟着变，这有点不符合OO设计了。这样很显然的耦合了一起。利用继承-->耦合度太高了.
->>>>>>第三种方法：
->>>>>>用接口改进.
->>>>>>我们把容易引起变化的部分提取出来并封装之，来应付以后的变法。虽然代码量加大了，但可用性提高了，耦合度也降低了。
->>>>>>我们把Duck中的fly方法和quack提取出来。
->>>>>>    public interface Flyable{
->>>>>>      public void fly(); 
->>>>>>  }
->>>>>>   public interface Quackable{
->>>>>>     public void quack();
->>>>>>  }
->>>>>>  最后Duck的设计成为：
->>>>>>public class Duck{
->>>>>>     public void swim(){   //游泳
->>>>>>            System.out.println(" 游泳");
->>>>>>    }    
->>>>>>    public  abstract void display(); /*因为外观不一样，让子类自 己去决定了。*/
->>>>>>}
->>>>>> 而MallardDuck,RedheadDuck,DisabledDuck 就可以写成为：
->>>>>>//野鸭
->>>>>> public class MallardDuck extends Duck  implements Flyable,Quackable{
->>>>>>     public void display(){
->>>>>>          System.out.println("野鸭的颜色...");
->>>>>>   }
->>>>>>   public void fly(){
->>>>>>    //实现该方法
->>>>>>  }
->>>>>>   public void quack(){
->>>>>>    //实现该方法
->>>>>>  }
->>>>>> }
->>>>>>//红头鸭
->>>>>> public class RedheadDuck extends Duck implements Flyable,Quackable{
->>>>>>     public void display(){
->>>>>>          System.out.println("红头鸭的颜色...");
->>>>>>   }
->>>>>>   public void fly(){
->>>>>>    //实现该方法
->>>>>>  }
->>>>>>   public void quack(){
->>>>>>    //实现该方法
->>>>>>  }
->>>>>>} 
->>>>>>//残废鸭 只实现Quackable（能叫不能飞）
->>>>>> public class DisabledDuck extends Duck implements Quackable{
->>>>>>     public void display(){
->>>>>>          System.out.println("残废鸭的颜色...");
->>>>>>   }
->>>>>>   public void quack(){
->>>>>>    //实现该方法
->>>>>>  }
->>>>>>}
->>>>>>点评:
->>>>>>好处:
->>>>>>这样已设计，我们的程序就降低了它们之间的耦合。
->>>>>>不足:
->>>>>>Flyable和 Quackable接口一开始似乎还挺不错的，解决了问题（只有会飞到鸭子才实现 Flyable），但是Java接口不具有实现代码，所以实现接口无法达到代码的复用。
->>>>>>第四种方法：
->>>>>>对上面各方式的总结:
->>>>>>继承的好处:让共同部分,可以复用.避免重复编程.
->>>>>>继承的不好:耦合性高.一旦超类添加一个新方法,子类都继承,拥有此方法,
->>>>>>
->>>>>>                    若子类相当部分不实现此方法,则要进行大批量修改.
->>>>>>                         继承时,子类就不可继承其它类了.
->>>>>>接口的好处:解决了继承耦合性高的问题.
->>>>>>
->>>>>>                     且可让实现类,继承或实现其它类或接口.
->>>>>>接口的不好:不能真正实现代码的复用.可用以下的策略模式来解决.
-
-------------------------- strategy(策略模式) -------------------------
-我们有一个设计原则：
-找出应用中相同之处，且不容易发生变化的东西，把它们抽取到抽象类中，让子类去继承它们；
-找出应用中可能需要变化之处，把它们独立出来，不要和那些不需要变化的代码混在一起。 -->important.
-现在，为了要分开“变化和不变化的部分”，我们准备建立两组类（完全远离Duck类），一个是"fly"相关的，另一个
-是“quack”相关的，每一组类将实现各自的动作。比方说，我们可能有一个类实现“呱呱叫”，另一个类实现“吱吱
-叫”，还有一个类实现“安静”。
-首先写两个接口。FlyBehavior(飞行行为)和QuackBehavior（叫的行为）.
-  public interface FlyBehavior{
-     public void fly();     
- }
- public interface QuackBehavior{
-     public void quack();
- }
- 我们在定义一些针对FlyBehavior的具体实现。
- public class FlyWithWings implements FlyBehavior{
-    public void  fly(){
-     //实现了所有有翅膀的鸭子飞行行为。
-   }
- }
-public class FlyNoWay implements FlyBehavior{
-
-    public void  fly(){
-      //什么都不做，不会飞
-    }
- }   
-针对QuackBehavior的几种具体实现。
-public class Quack implements QuackBehavior{
-    public void quack(){
-      //实现呱呱叫的鸭子
-  }
-}
-
-public class Squeak implements QuackBehavior{
-    public void quack(){
-      //实现吱吱叫的鸭子 
-  }
-}
-
-public class MuteQuack implements QuackBehavior{
-    public void quack(){
-      //什么都不做，不会叫
-  }
-}
-点评一:
-这样的设计，可以让飞行和呱呱叫的动作被其他的对象复用，因为这些行为已经与鸭子类无关了。而我们增加一些新
-的行为，不会影响到既有的行为类，也不会影响“使用”到飞行行为的鸭子类。
-最后我们看看Duck 如何设计。
-     public class Duck{        --------->在抽象类中,声明各接口,定义各接口对应的方法.
-      FlyBehavior flyBehavior;//接口
-      QuackBehavior quackBehavior;//接口
-       public Duck(){}
-       public abstract void display();
-       public void swim(){
-        //实现游泳的行为
-        }
-       public void performFly(){
-            flyBehavior.fly();  -->由于是接口,会根据继承类实现的方式,而调用相应的方法.
-     }
-     public void performQuack(){
-          quackBehavior.quack();();
-    }
- }
-看看MallardDuck如何实现。
------>通过构造方法,生成'飞','叫'具体实现类的实例,从而指定'飞','叫'的具体属性
- public class MallardDuck extends Duck{
-       public MallardDuck {       
-        flyBehavior = new FlyWithWings ();
-        quackBehavior = new Quack(); 
-      //因为MallardDuck 继承了Duck，所有具有flyBehavior 与quackBehavior 实例变量}
-    public void display(){
-     //实现
-   }
- }
- 这样就满足了即可以飞，又可以叫，同时展现自己的颜色了。
-这样的设计我们可以看到是把flyBehavior ，quackBehavior 的实例化写在子类了。我们还可以动态的来决定。
-  我们只需在Duck中加上两个方法。
-
-在构造方法中对属性进行赋值与用属性的setter的区别：
-构造方法中对属性进行赋值：固定，不可变；
-用属性的setter，可以在实例化对象后，动态的变化，比较灵活。
-
-
-  public class Duck{
-      FlyBehavior flyBehavior;//接口
-      QuackBehavior quackBehavior;//接口
-      public void setFlyBehavior(FlyBehavior flyBehavior){
-            this.flyBehavior = flyBehavior;
-     }
-    public void setQuackBehavior(QuackBehavior quackBehavior  {
-            this.quackBehavior= quackBehavior;
-     }
- }
-
-------------------------- static Factory Method(静态工厂) -------------------------
-(1)
-在设计模式中,Factory Method也是比较简单的一个,但应用非常广泛,EJB,RMI,COM,CORBA,Swing中都可以看到此模式
-的影子,它是最重要的模式之一.在很多地方我们都会看到xxxFactory这样命名的类.
-(2)
-基本概念：
-FactoryMethod是一种创建性模式,它定义了一个创建对象的接口,但是却让子类来决定具体实例化哪一个类.
-通常我们将Factory Method作为一种标准的创建对象的方法。
-应用方面：
-当一个类无法预料要创建哪种类的对象或是一个类需要由子类来指定创建的对象时我们就需要用到Factory Method 模
-式了.
--------------------------------- singelton(单例模式) --------------------------------
-基本概念:
-Singleton 是一种创建性模型,它用来确保只产生一个实例,并提供一个访问它的全局访问点.对一些类来说,保证只有一个实例是很重要的,比如有的时候,数据库连接或 Socket 连接要受到一定的限制,必须保持同一时间只能有一个连接的存在.
-运用：
-在于使用static变量；
-创建类对象，一般是在构造方法中，或用一个方法来创建类对象。在这里方法中，加对相应的判断即可。
-
-单态模式与共享模式的区别：
-单态模式与共享模式都是让类的实例是唯一的。
-但单态模式的实现方式是：
-在类的内部.即在构造方法中，或静态的getInstace方法中，进行判断，若实例存在，则直接返回，不进行创建；
-共享模式的实现方式是：
-每次要用到此实例时，先去此hashtable中获取，若获取为空，则生成实例，且将类的实例放在一人hashtable中，若获取不为空，则直接用此实例。
-
-
-
-（2）
-实例一：
-public class Singleton {  
-  private static Singleton s; 
-  public static Singleton getInstance() {
-    if (s == null)
-      s = new Singleton();
-    return s;
-  }
-}
-// 测试类
-class singletonTest {
-  public static void main(String[] args) {
-    Singleton s1 = Singleton.getInstance();
-    Singleton s2 = Singleton.getInstance();
-    if (s1==s2)
-      System.out.println("s1 is the same instance with s2");
-    else
-      System.out.println("s1 is not the same instance with s2");
-  }
-}
-singletonTest运行结果是:
-s1 is the same instance with s2
-（3）
-实例二：
-class Singleton {
-  static boolean instance_flag = false; // true if 1 instance
-  public Singleton() {
-    if (instance_flag)
-      throw new SingletonException("Only one instance allowed");
-    else
-      instance_flag = true; // set flag for 1 instance
-  }
-}
--------------------------------- 观察者模式(Observer) --------------------------------
-(1)
-基本概念:
-观察者模式属于行为型模式，其意图是定义对象间的一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到通知并被自动更新。
-这一个模式的关键对象是目标（Subject）和观察者（Observer）。一个目标可以有任意数目的依赖它的观察者，一旦目标的状态发生改变，所有的观察者都得到通知，作为对这个通知的响应，每个观察者都将查询目标以使其状态与目标的状态同步。
-适用场景：
-观察者模式，用于存在一对多依赖关系的对象间，当被依赖者变化时，通知依赖者全部进行更新。因此，被依赖者，应该有添加/删除依赖者的方法，且可以将添加的依赖者放到一个容器中；且有一个方法去通知依赖者进行更新。
-(2)
-思想:
-(一)
-建立目标(subject)与观察者(observer)接口:
-目标(subject)接口:
-建立一个注册观察者对象的接口; public void attach(Observer o);
-建立一个删除观察者对象的接口; public void detach(Observer o);
-建立一个当目标状态发生改变时,发布通知给观察者对象的接口; public void notice();
-观察者(observer)接口:
-建立一个当收到目标通知后的更新接口: public void update();
-(3)
-实例：
-老师又电话号码，学生需要知道老师的电话号码以便于在合时的时候拨打，在这样的组合中，老师就是一个被观察者
-（Subject），学生就是需要知道信息的观察者，当老师的电话号码发生改变时，学生得到通知，并更新相应的电话记
-录。
-具体实例如下:
-Subject代码：
-public interface Subject{
-    public void attach(Observer o);
-    public void detach(Observer o);
-    public void notice();
-}
-Observer代码：
-public interface Observer{
-    public void update();
-}
-Teacher代码；
-import java.util.Vector;
-public class Teacher implements Subject{
-    private String phone;
-    private Vector students;
-    public Teacher(){
-       phone = "";
-       students = new Vector();
-    }
-    public  void attach(Observer o){
-       students.add(o);
-    }
-    public void detach(Observer o){
-       students.remove(o);
-    }
-    public void notice(){
-       for(int i=0;i<students.size();i++)
-           ((Observer)students.get(i)).update();
-    }
-    public void setPhone(String phone){
-       this.phone = phone;
-       notice();    --关键
-    }
-    public String getPhone(){
-       return phone;
-    }
-}
-Student代码：
-public class Student implements Observer{
-    private String name;
-    private String phone;
-    private Teacher teacher;
-    public Student(String name,Teacher t){
-       this.name = name;
-       teacher = t;
-    }
-    public void show(){
-       System.out.println("Name:"+name+"\nTeacher'sphone:"+phone);
-    }
-    public void update(){
-       phone = teacher.getPhone();
-    }
-}
-Client代码：
-package observer;
-import java.util.Vector;
-public class Client{         -->可以只定义目标者,观察者,另外的vector,只为了输入结果.
-    public static void main(String[] args){
-       Vector students = new Vector();
-       Teacher t = new Teacher();
-       for(int i= 0 ;i<10;i++){
-           Student st = new Student("lili"+i,t);
-           students.add(st);
-           t.attach(st);
-       }
-       t.setPhone("88803807");
-       for(int i=0;i<10;i++)
-              ((Student)students.get(i)).show();
-       t.setPhone("88808880");
-       for(int i=0;i<10;i++)
-              ((Student)students.get(i)).show();
-    }
-}
-总结：Observer模式的最知名的应用是在MVC结构，Observer模式可以很好的应用在文档和图表程序的制作中。
-
------------------------------- 迭代器模式(Iterator) -------------------------------
-(1)
-基本概念:
-迭代器模式属于行为型模式，其意图是提供一种方法顺序访问一个聚合对象中得各个元素，而又不需要暴露该对象的
-内部表示。
-至少可以历遍first,next,previous,last,isOver,或是历遍选择符合某种条件的子元素.
-(2)
-结构:
-由一个接口与一个实现类组成.
-接口: 
-主要是定义各历遍的方法.
-实现类: 
-需要一个计算点private int current=0 ; 以及一个容器Vector,来存在原来的进行历遍的一团东西;再对接口方法进
-行实现.
-(3)
-实例:        
-Iterator接口：
-package iterator;
-public interface Iterator{
-/*
-Item:即是集合中的各对象的类型.若为String,即把所有的ITEM改为String,若为其它自定义的类,则改为各自定义的类
-的接口,或类. --->important.  
-*/
-    public Item first();
-    public Item next();
-    public boolean isDone();
-    public Item currentItem();
-}
-Controller类实现了Iterator接口。
-package iterator;
-import java.util.Vector;
-public class Controller implements Iterator{
-    private int current =0;
-    Vector channel;
-    public Controller(Vector v){
-       channel = v;
-    }
-    public Item first(){
-       current = 0;
-       return (Item)channel.get(current);
-    }
-    public Item next(){
-       current ++;
-       return (Item)channel.get(current);
-    }
-    public Item currentItem(){
-       return (Item)channel.get(current);
-    }
-    public boolean isDone(){
-       return current>= channel.size()-1;
-    }
-}
-Television接口：
-package iterator;
-import java.util.Vector;
-public interface Television{
-    public Iterator createIterator();
-}
-HaierTV类实现了Television接口。
-package iterator;
-import java.util.Vector;
-public class HaierTV implements Television{     ---对象
-    private Vector channel;
-    public HaierTV(){
-       channel = new Vector();
-       channel.addElement(new Item("channel 1")); --各元素，用VECTOR存放
-       channel.addElement(new Item("channel 2"));
-       channel.addElement(new Item("channel 3"));
-       channel.addElement(new Item("channel 4"));
-       channel.addElement(new Item("channel 5"));
-       channel.addElement(new Item("channel 6"));
-       channel.addElement(new Item("channel 7"));
-    }
-    public Iterator createIterator(){
-       return new Controller(channel);          --把这个VECTOR放到迭代器中构造方法中去
-    }
-}
-Client客户端：
-package iterator;
-public class Client{
-    public static void main(String[] args){
-       Television tv = new HaierTV();
-       Iterator it =tv.createIterator();
-       System.out.println(it.first().getName());
-       while(!it.isDone()){
-           System.out.println(it.next().getName());
-       }
-    }
-}
-Item类的接口：              
-package iterator;
-public class Item{
-    private String name;
-    public Item(String aName){
-       name = aName;
-    }
-    public String getName(){
-       return name;
-    }
-}
------------------------------- 外观模式(Facade) -------------------------------
-(1)
-外观模式属于结构型模式，Facade模式定义了一个高层接口，这个接口使得这一子系统更加容易使用。
-外观模式的主要用途就是为子系统的复杂处理过程提供方便的调用方法，使得子系统更加容易被使用。
--->将复杂的过程包含在里面,提供一个简单的应用接口即可.
-(2)
-例如在一个泡茶的过程中，需要作如下的工作：烧开水，准备茶叶，把茶叶放在被子里，把烧开的水放到茶杯中，只
-有经过这些过程之后才能泡出好的茶叶来。这是一个常用的步骤，80%的泡茶步骤都是这个样子的，可以把这些动作串
-联起来，形成一个整体的步骤.如下例的MakeACuppa()，使用了facade的模式,这样在调用步方法时就比较方便。这便
-是外观模式，里面的细节被屏蔽掉了。
-public class TeaCup{.....}
-public class TeaBag{.....}
-public class Water{.....}
-public class FacadeCuppaMaker{
-    private boolean TeaBagIsSteeped;
-    public FacadeCuppaMaker(){
-       System.out.println("FacadeCuppaMaker 准备好冲茶了");
-    }
-    public TeaCup makeACuppa(){
-       TeaCup cup = new TeaCup();
-       TeaBag teaBag= new TeaBag();
-       Water water = new Water();
-       cup.addFacadeTeaBag(teaBag);
-       water.boilFacadeWater();
-       cup.addFacadeWater(water);
-       cup.steepTeaBag();
-       return cup;
-    }
-}
------------------------------- 适配器模式(adapter) -------------------------------
-(1)
-适配器模式的意图是将一个已存在的类/接口进行复用,将其转换/具体化成客户希望的另外的一个类/接口。
-(2)
-如何实例复用：
-将要进行复用的类，放到目标类的构造方法中，进行实例化，然后在目标类的相应方法中，进行调用，修改原来方法
-中的参数，或添加相应的逻辑。即复用了已有类的原来方法。
-要被复用的类：
-public class Adaptee{
-    public long getPower(long base,long exp){
-       long result=1;
-       for(int i=0;i<exp;i++)
-           result*=base;
-       return result;
-    }
-}
-目标类：--也可直接实现，不用接口。
-public interface Target{
-    public long get2Power(long exp);
-}
-public class Adapter implements Target{
-    private Adaptee pt;
-    public Adapter(){
-       pt = new Adaptee();
-    }
-    public long get2Power(long exp){
-       return pt.getPower(2,exp);   ---修改原来方法中的参数，
-    }
-}
-(3)
-又如：
-在SCM中添加的方法:
-已有接口:
-public boolean updateRecordStates(Double recordId,Double tableNameMapping,int state,boolean
-subRecordUpdate) throws RemoteException;
-已有实现类:
-public boolean updateRecordStates(Double recordId,Double tableNameMapping,int state,boolean
-subRecordUpdate) throws RemoteException
-{
-return moveTable.updateRecordStates(recordId,tableNameMapping,state,subRecordUpdate); 
-}
-若采用适配器模式:
-接口:
-public boolean updateStatesAdapterForSelfPanel(Double recordId,Double tableNameMapping,int state)
-throws RemoteException;
-实现类:
-public boolean updateStatesAdapterForSelfPanel(Double recordId,Double tableNameMapping,int state)
-throws RemoteException
-{
- return this.updateRecordStates(recordId,tableNameMapping,state,false);
-}
------------------------------- 代理模式(Proxy) -------------------------------
-(1)
-代理的好处:
---->是可以在间接访问对象的同时,要其前或后,添加其它的逻辑代码.
---->对原来逻辑进行添加其它逻辑,最终生成新的逻辑.即:对类的方法添加一些额外的逻辑,生成新的方法逻辑.
-(2)
-静态代理: 
--->一个原类与一个代理类要一一对应。
--->两者都实现共同的接口或继承相同的抽象类；
--->只是在代理类中,实例化原类，在原类方法的前后添加新的逻辑。
-如下:
-抽象角色：
-abstract public class Subject
-{
-    abstract public void request();
-}
-真实角色：
-public class RealSubject extends Subject
-{
-       public void request()
-       {
-              System.out.println("From real subject.");
-       }
-}
-代理角色：
-public class ProxySubject extends Subject
-{
-    private RealSubject realSubject;  //以真实角色作为代理角色的属性
-       public ProxySubject()
-       { realSubject=new RealSubject(); }
-       public void request()  //与原方法名相同
-       {
-        preRequest();
-        realSubject.request();  //此处执行真实对象的request方法
-        postRequest();
-      }
-    private void preRequest()
-    {
-        //something you want to do before requesting
-    }
-    private void postRequest()
-    {
-        //something you want to do after requesting
-    }
-}
-客户端调用：
-Subject sub=new ProxySubject();
-Sub.request();
-(3)
-动态代理类
-Java动态代理类位于Java.lang.reflect包下，一般主要涉及到以下两个类：
-1)
-Interface InvocationHandler：该接口中仅定义了一个方法：invoke(Object obj,Method method, Object[] args)
-。在实际使用时，第一个参数obj一般是指代理类，method是被代理的方法，args为该方法的参数数组。这个抽象方法
-在代理类中动态实现。
-2)
-Proxy：该类即为动态代理类，其中主要包含以下内容：
-Static Object newProxyInstance(ClassLoader loader, Class[] interfaces, InvocationHandler h)：返回代理类
-的一个实例，返回后的代理类可以当作被代理类使用。
-所谓Dynamic Proxy是这样一种class：它是在运行时生成的class，在生成它时你必须提供一组interface给它，然后
-该class就宣称它实现了这些 interface。
-3)
-在使用动态代理类时，我们必须实现InvocationHandler接口，
-public interface Subject
-{
-    public void request();
-}
-具体角色RealSubject：同上；
-代理角色：
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationHandler;
-public class DynamicSubject implements InvocationHandler {
-  private Object sub;
-  public DynamicSubject(Object obj) {
-    sub = obj;
-  }
-  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    System.out.println("before calling " + method);
-    method.invoke(sub,args);
-    System.out.println("after calling " + method);
-    return null;
-  }
-}
-==>
-method.invoke(sub,args);
-其实就是调用被代理对象的将要被执行的方法，方法参数sub是实际的被代理对象，args为执行被代理对象相应操作所
-需的参数。通过动态代理类，我们可以在调用之前或之后执行一些相关操作。
-客户端：
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-public class Client
-{
-    static public void main(String[] args) throws Throwable
-    {
-      RealSubject rs = new RealSubject();  //在这里指定被代理类
-      InvocationHandler ds = new DynamicSubject(rs);  //初始化代理类
-      Subject subject = (Subject) Proxy.newProxyInstance(rs.getClass().getClassLoader(),rs.getClass
-().getInterfaces(),ds );
-      subject.request();
-}
-5)
-实例二：
-package dynamicProxy;
-public interface Work {
- public void startWork();
-}
-package dynamicProxy;
-public class JasonWork implements Work {
- public void startWork() {
-  System.out.println("jason start to work...");
- }
-}
-public interface Play {
- public void startPlay();
-}
-public class JasonPlay implements Play {
- public void startPlay() {
-  System.out.println("jason start to play...");
- }
-}
-public class Test {
-public static void main(String[] args) 
-{
-
-            JasonWork work=new JasonWork();
-                InvocationHandler dynamicProxy=new DynamicProxy(work);
-                Work jasonproxy=(Work)Proxy.newProxyInstance(work.getClass().getClassLoader(),
-work.getClass().getInterfaces(), dynamicProxy);
-
-            jasonproxy.startWork();
-  JasonPlay play=new JasonPlay();
-  InvocationHandler dynamicProxy=new DynamicProxy(play);
-  Play jasonproxy=(Play)Proxy.newProxyInstance(play.getClass().getClassLoader(),
-play.getClass().getInterfaces(), dynamicProxy);
-  jasonproxy.startPlay();
- }
-}
-===>动态代理类,可以与任何类型的真实类(work/play),进行结合,进行动态的代理.
-
-
-
------------------------------- 状态模式(state) -------------------------------
-(1)
-State模式定义：
-不同的状态,不同的行为; 或者说,每个状态有着相应的行为.
-适用场合：
-State模式在实际使用中比较多,适合"状态的切换".因为我们经常会使用If elseif else 进行状态切换, 如果针对状态的这样判断切换反复出现,我们就要联想到是否可以采取State模式了.
--->适合于内部状态,不断循环变化的.
-(2)
-一个state,包括两部分: 对象 + 对象内部的属性(属性接口+具体属性)
-一个对象,要有其属性,以及其setter,getter.且设置好其初始状态+一个调用显示状态的方法(里面就是状态调用自身的显示方法).
-一个属性接口,应该有一个执行的方法.
-一个具体属性,须包含对象进去,实现方法中,须设置对象下一个要显示的属性-->从而在对象下次调用方法时,其属性值会变化.
-
-状态模式与观察者模式的区别：
-状态模式，也跟观察者模式一样，是一对多的模式。但观察者模式是“一”变了，所有的“多”也会更新。
-状态模式，强调的是：“多”是“一”的各个状态，“一”的各个状态，进行不断的循环。
-
-如何建立一与多的关系：
-“多”，都是实现一个接口的。所以，在“一”的类中，声明的是“多”的接口；若“多”中要建立与“一”的关系，只须直接在类中声明“一”即可。
-
-
-(3)
-代码:
-public interface Color {
- public void show();
-}
-package state;
-class Light
-{
- Color color;
- public Color getColor() {
-  return color;
- }
- public void setColor(Color color) {
-  this.color = color;
- }
-
- public Light()
- {
-  color=new RedColor(this);
- }
-
- public void showColor()
- {
-  color.show();
- }
-
-}
-class RedColor implements Color
-{
- Light light;
- public RedColor(Light light)
- {
-  this.light=light;
- }
-
- public void show()
- {
- System.out.println("the color is red,the car must stop !");
- System.out.println("write down all logic shoud do this in this state.....");
-  light.setColor(new GreenColor(light));
- }
-}
-class GreenColor implements Color
-{
- Light light;
- public GreenColor(Light light)
- {
-  this.light=light;
- }
-
- public void show()
- {
- System.out.println("the color is green,the car can run !");
- System.out.println("write down all logic shoud do this in this state.....");
-  light.setColor(new YellowColor(light));
- }
-}
-class YellowColor implements Color
-{
- Light light;
- public YellowColor(Light light)
- {
-  this.light=light;
- }
-
- public void show()
- {
- System.out.println("the color is yellow,the car shoud stop !");
- System.out.println("write down all logic shoud do this in this state.....");
-  light.setColor(new RedColor(light));
- }
-}
-public class CarLight {
- public static void main(String[] args) {
-  Light light=new Light();
-
-  //初始调用为红灯
-  light.showColor();
-  //再调用为绿灯
-  light.showColor();
-  //再调用为黄灯
-  light.showColor();
-  //不断调用,不断循环.  
- }
-}
-
-
-
------------------------------- 享元模式(Flyweight) -------------------------------
-(1)
-主要用于创建对象时，运用共享技术，减少对象对内存的占用.一个提高程序效率和性能的模式,会大大加快程序的运
-行速度.
-就是说在一个系统中如果有多个相同的对象，那么只共享一份就可以了，不必每个都去实例化一个对象。
-Flyweight(享元)模式中常出现Factory模式。Flyweight的内部状态是用来共享的,Flyweight factory负责维护一个对
-象存储池（Flyweight Pool）来存放内部状态的对象。
-Flyweight的关键思路,在于:
-新建对象时:
-先到hashtable中进行获取-->判断取得对象是否为空-->若是,则新建此对象,且放回hashtable -->若存在,则共享原来
-的对象.
-(2)
-实例: (与静态工厂模式进行对比)
-public interface Car {
- public void showCarName();
-}
-class BMWCar implements Car
-{
- public void showCarName()
- {
-  System.out.println("this is the BMWCar .");
- }
-}
-class FordCar implements Car
-{
- public void showCarName()
- {
-  System.out.println("this is the FordCar .");
- }
-}
-class CarFactory
-{
- public static Car car;
- public static Car getCar(String name)
- {
-  if("BMW".equals(name))
-  {
-   car = new BMWCar();
-  }
-  if("Ford".equals(name))
-  {
-   car =  new FordCar();
-  }
-  return car;
- }
-}
-class CarFlyWeightFactory
-{
-    public  Car car;
-    private Hashtable<String,Car> carPool=new Hashtable<String,Car>();
- public  Car getCar(String name)
- {
-  if("BMW".equals(name))
-  {
-   car=carPool.get(name);
-   if(car==null)
-   {
-    car=new BMWCar();
-    carPool.put(name, car);
-   }
-  }
-
-  if("Ford".equals(name))
-  {
-   car=carPool.get(name);
-   if(car==null)
-   {
-    car=new FordCar();
-    carPool.put(name, car);
-   }
-  }
-  return car;
- }
-
-    public int getNumber(){ return carPool.getSize(); }
-}
-
-public class Test {
- public static void main(String[] args) {
-  CarFlyWeightFactory carFlyWeightFactory=new CarFlyWeightFactory();
-  Car carf1=carFlyWeightFactory.getCar("Ford");
-  carf1.showCarName();
-  Car carf2=carFlyWeightFactory.getCar("Ford");
-  carf2.showCarName();
-  if(carf1==carf2)
-  {
-   System.out.println("同一部车来的");
-  }
-  else
-  {
-   System.out.println("不同一部车来的");
-  }
-  System.out.println("车的数量是:"+carFlyWeightFactory.getNumber());
- }
-}
-输出:
-this is the FordCar .
-this is the FordCar .
-同一部车来的
-
----------------------- 职责链模式(Chain of Responsibility) -----------------------
-(1)
-Chain of Responsibility职责链模式：
-为了避免请求的发送者和接收者之间的耦合关系，使多个接受对象都有机会处理请求。将这些对象连成一条链，并沿着这条链传递该请求，直到有一个对象处理它为止。
--->
-要沿着链转发请求，并保证接受者为隐式的，每个链上的对象都有一致的处理请求和访问链上后继者的接口(即如下实例中,在自己方法中再调用一次相同的方法)。
-(2)
-public class Boy {
-
- private boolean hasCar; // 是否有车
- private boolean hasHouse; // 是否有房
- private boolean hasResponsibility; // 是否有责任心
- public Boy() {
- }
- public Boy(boolean hasCar, boolean hasHouse, boolean hasResponsibility) {
-  this.hasCar = hasCar;
-  this.hasHouse = hasHouse;
-  this.hasResponsibility = hasResponsibility;
- }
- public boolean isHasCar() {
-  return hasCar;
- }
- public void setHasCar(boolean hasCar) {
-  this.hasCar = hasCar;
- }
- public boolean isHasHouse() {
-  return hasHouse;
- }
- public void setHasHouse(boolean hasHouse) {
-  this.hasHouse = hasHouse;
- }
- public boolean isHasResponsibility() {
-  return hasResponsibility;
- }
- public void setHasResponsibility(boolean hasResponsibility) {
-  this.hasResponsibility = hasResponsibility;
- }
-}
-public interface Handler {
-  public void handleRequest(Boy boy);
-}
-public class HouseHandler implements Handler {
-
- private Handler handler;
- public HouseHandler(Handler handler) {
-  this.handler = handler;
- }
- public Handler getHandler() {
-  return handler;
- }
- public void setHandler(Handler handler) {
-  this.handler = handler;
- }
- public void handleRequest(Boy boy) {
-  if (boy.isHasHouse()) {
-   System.out.println("没想到吧，我还有房子");
-  } else {
-   System.out.println("我也没有房");
-   handler.handleRequest(boy);
-  }
- }
-}
-public class CarHandler implements Handler {
- private Handler handler;
- public CarHandler(Handler handler) {
-  this.handler = handler;
- }
- public Handler getHandler() {
-  return handler;
- }
- public void setHandler(Handler handler) {
-  this.handler = handler;
- }
- public void handleRequest(Boy boy) {
-  if (boy.isHasCar()) {
-   System.out.println("呵呵，我有辆车");
-  } else {
-   System.out.println("我没有车");
-   handler.handleRequest(boy);
-  }
- }
-}
-public class ResponsibilityHandler implements Handler {
- private Handler handler;
- public ResponsibilityHandler(Handler handler) {
-  this.handler = handler;
- }
- public Handler getHandler() {
-  return handler;
- }
- public void setHandler(Handler handler) {
-  this.handler = handler;
- }
- public void handleRequest(Boy boy) {
-  if (boy.isHasResponsibility()) {
-   System.out.println("我只有一颗带Responsibility的心");
-  } else {
-   System.out.println("更没有责任心");
-   handler.handleRequest(boy);
-  }
- }
-}
-public class Girl {
-
- public static void main(String[] args) {
-  // 这个boy没有车，也没有房，不过很有责任心
-  Boy boy = new Boy(false, false, true);
-
-            // 也可以使用setHanlder方法
-  Handler handler = new CarHandler(new HouseHandler(
-    new ResponsibilityHandler(null)));
-  handler.handleRequest(boy);
- }
-}
-==>
-如何实例使请求沿着链在各接受对象中传递,当没被第一个接受对象接受时,会传递给第二个对象,若被第一个对象接受了,则不传递下去:
-1.各具体的接受对象采用这样的构造方法:
-public CarHandler(Handler handler) { this.handler = handler; }
-2.各具体的接受对象实现接口的方法handleRequest()中.在调用时,若被接受,则执行true的内容,若不被接受,则执行false的内容,并继续调用再调用handleRequest()方法.
-3.在最后的测试类中,生成具体的handler时,用多层包含的形式.这样,在调用了上一层car的方法后,会调用house的相应方法,最后再调用ResponsibilityHandler的方法.
-==>前两个handler是采用了有参数的构造方法,最后一个是采用了为NULL的构造方法
-
------------------------------- 备忘录模式(Memento) -------------------------------
-(1)
-备忘录模式属于行为型模式，其意图是在不破坏封装性的前提下，捕获一个对象的内部状态，并在该对象之外保存这
-个状态，这样以后就可以将对象恢复到原先保存的状态。
-(2)
-实例如下:
-有一个对象Employee.除了属性外,还需要一个保存,还原状态的方法.
-有一个对象Memento,用来记录Employee每一个时刻的状态,
-CareTaker,用来保存,拿回Memento.需要一个保存,还原状态的方法.->需要一个指针,一个容器.
-package memento;
-public class Memento{
-    String name;
-    int age;
-    public Memento(String name,int age){
-       this.name = name;
-       this.age = age;
-    }
-}
-Employee模式：
-package memento;
-public class Employee{
-    private String name;
-    private int age;
-    public Employee(String aName,int aAge){
-       name = aName;
-       age = aAge;
-    }
-    public void setName(String aName){
-       name = aName;
-    }
-    public void setAge(int aAge){
-       age = aAge;
-    }
-    public Memento  saveMemento(){
-       return new Memento(name,age);
-    }
-    public void restoreMemento(Memento memento){
-       age = memento.age;
-       name = memento.name;
-    }
-    public int getAge(){
-       return age;
-    }
-    public String getName(){
-       return name;
-    }
-}
-CareTaker代码：
-package memento;
-import java.util.Vector;
-public class CareTaker{
-    private Vector v;
-    private int  current;
-    public CareTaker(){
-       current = -1;
-       v = new Vector();
-    }
-    public void setMemento(Memento mem){
-       current ++;
-       v.add(mem);
-    }
-    public Memento getMemento(){
-       if(current>0){
-           current --;
-           return(Memento) v.get(current);
-       }
-       return null;
-    }
-}
-Client代码：
-package memento;
-public class Client{
-    public static void show(Employee e){
-       System.out.println("-----------------------------------");
-       System.out.println("Name:"+e.getName());
-       System.out.println("Age:" + e.getAge());
-       System.out.println("-----------------------------------");
-    }
-    public static void main(String[] args){
-       Employee e = new Employee("lili",25);
-       CareTaker ct = new CareTaker();
-       show(e);
-       ct.setMemento(e.saveMemento());
-       e.setName("litianli");
-       show(e);
-       ct.setMemento(e.saveMemento());
-       e.setAge(45);
-       show(e);
-       ct.setMemento(e.saveMemento());
-       //restore
-       e.restoreMemento(ct.getMemento());
-       show(e);
-       e.restoreMemento(ct.getMemento());
-       show(e);
-    }
-}
+摘自：http://blog.csdn.net/lifuxiangcaohui/article/details/8065059     
+     
+     
+     
+     
+     
+设计模式；     
+一个程序员对设计模式的理解:     
+“不懂”为什么要把很简单的东西搞得那么复杂。后来随着软件开发经验的增加才开始明白我所看到的“复杂”恰恰就是设计模式的精髓所在，我所理解的“简单”就是一把钥匙开一把锁的模式，目的仅仅是着眼于解决现在的问题，而设计模式的“复杂”就在于它是要构造一个“万能钥匙”，目的是提出一种对所有锁的开锁方案。在真正理解设计模式之前我一直在编写“简单”的代码.     
+这个“简单”不是功能的简单，而是设计的简单。简单的设计意味着缺少灵活性，代码很钢硬，只在这个项目里有用，拿到其它的项目中就是垃圾，我将其称之为“一次性代码”。     
+-->要使代码可被反复使用,请用'设计模式'对你的代码进行设计.     
+很多我所认识的程序员在接触到设计模式之后，都有一种相见恨晚的感觉，有人形容学习了设计模式之后感觉自己好像已经脱胎换骨，达到了新的境界，还有人甚至把是否了解设计模式作为程序员划分水平的标准。     
+我们也不能陷入模式的陷阱，为了使用模式而去套模式，那样会陷入形式主义。我们在使用模式的时候，一定要注意模式的意图（intent），而不 要过多的去关注模式的实现细节，因为这些实现细节在特定情况下，可能会发生一些改变。不要顽固地认为设计模式一书中的类图或实现代码就代表了模式本身。     
+     
+设计原则：(重要)     
+1.     
+逻辑代码独立到单独的方法中，注重封装性--易读，易复用。     
+不要在一个方法中，写下上百行的逻辑代码。把各小逻辑代码独立出来，写于其它方法中，易读其可重复调用。     
+2.     
+写类，写方法，写功能时，应考虑其移植性，复用性：防止一次性代码！     
+是否可以拿到其它同类事物中应该？是否可以拿到其它系统中应该？     
+3.     
+熟练运用继承的思想：     
+找出应用中相同之处，且不容易发生变化的东西，把它们抽取到抽象类中，让子类去继承它们；     
+继承的思想，也方便将自己的逻辑建立于别人的成果之上。如ImageField extends JTextField；     
+熟练运用接口的思想：     
+找出应用中可能需要变化之处，把它们独立出来，不要和那些不需要变化的代码混在一起。     
+     
+把很简单的东西搞得那么复杂，一次性代码，设计模式优势的实例说明：（策略模式）     
+说明：     
+模拟鸭子游戏的应用程序，要求：游戏中会出现各种颜色外形的鸭子，一边游泳戏水，一边呱呱叫。     
+第一种方法：（一次性代码）     
+直接编写出各种鸭子的类：MallardDuck//野鸭，RedheadDuck//红头鸭，各类有三个方法：     
+quack()：叫的方法     
+swim()：游水的方法     
+display()：外形的方法     
+第二种方法：运用继承的特性，将其中共同的部分提升出来，避免重复编程。     
+即：设计一个鸭子的超类（Superclass）,并让各种鸭子继承这个超类。     
+public class Duck{     
+     public void quack(){  //呱呱叫     
+              System.out.println("呱呱叫");     
+      }     
+     public void swim(){   //游泳     
+            System.out.println(" 游泳");     
+      }         
+     public  abstratact void display(); /*因为外观不一样，让子类自己去决定了。*/     
+}     
+对于它的子类只需简单的继承就可以了，并实现自己的display()方法。     
+//野鸭     
+ public class MallardDuck extends Duck{     
+     public void display(){     
+          System.out.println("野鸭的颜色...");     
+   }     
+ }     
+//红头鸭     
+ public class RedheadDuck extends Duck{     
+     public void display(){     
+          System.out.println("红头鸭的颜色...");     
+   }     
+}     
+不幸的是，现在客户又提出了新的需求，想让鸭子飞起来。这个对于我们OO程序员，在简单不过了，在超类中在加一     
+个方法就可以了。     
+public class Duck{     
+     public void quack(){  //呱呱叫     
+              System.out.println("呱呱叫");     
+      }     
+     public void swim(){   //游泳     
+            System.out.println(" 游泳");     
+    }         
+    public  abstract void display(); /*因为外观不一样，让子类自己去决定了。*/     
+   public void fly(){     
+     
+    System.out.println("飞吧！鸭子");      
+  }     
+}     
+对于不能飞的鸭子，在子类中只需简单的覆盖。     
+//残废鸭     
+ public class DisabledDuck extends Duck{     
+     public void display(){     
+          System.out.println("残废鸭的颜色...");     
+   }     
+   public void fly(){     
+    //覆盖，变成什么事都不做。      
+  }     
+}      
+其它会飞的鸭子不用覆盖。     
+这样所有的继承这个超类的鸭子都会fly了。但是问题又出来了，客户又提出有的鸭子会飞，有的不能飞。     
+>>>>>>点评:     
+>>>>>>对于上面的设计，你可能发现一些弊端，如果超类有新的特性，子类都必须变动，这是我们开发最不喜欢看到的，一个类变让另一个类也跟着变，这有点不符合OO设计了。这样很显然的耦合了一起。利用继承-->耦合度太高了.     
+>>>>>>第三种方法：     
+>>>>>>用接口改进.     
+>>>>>>我们把容易引起变化的部分提取出来并封装之，来应付以后的变法。虽然代码量加大了，但可用性提高了，耦合度也降低了。     
+>>>>>>我们把Duck中的fly方法和quack提取出来。     
+>>>>>>    public interface Flyable{     
+>>>>>>      public void fly();      
+>>>>>>  }     
+>>>>>>   public interface Quackable{     
+>>>>>>     public void quack();     
+>>>>>>  }     
+>>>>>>  最后Duck的设计成为：     
+>>>>>>public class Duck{     
+>>>>>>     public void swim(){   //游泳     
+>>>>>>            System.out.println(" 游泳");     
+>>>>>>    }         
+>>>>>>    public  abstract void display(); /*因为外观不一样，让子类自 己去决定了。*/     
+>>>>>>}     
+>>>>>> 而MallardDuck,RedheadDuck,DisabledDuck 就可以写成为：     
+>>>>>>//野鸭     
+>>>>>> public class MallardDuck extends Duck  implements Flyable,Quackable{     
+>>>>>>     public void display(){     
+>>>>>>          System.out.println("野鸭的颜色...");     
+>>>>>>   }     
+>>>>>>   public void fly(){     
+>>>>>>    //实现该方法     
+>>>>>>  }     
+>>>>>>   public void quack(){     
+>>>>>>    //实现该方法     
+>>>>>>  }     
+>>>>>> }     
+>>>>>>//红头鸭     
+>>>>>> public class RedheadDuck extends Duck implements Flyable,Quackable{     
+>>>>>>     public void display(){     
+>>>>>>          System.out.println("红头鸭的颜色...");     
+>>>>>>   }     
+>>>>>>   public void fly(){     
+>>>>>>    //实现该方法     
+>>>>>>  }     
+>>>>>>   public void quack(){     
+>>>>>>    //实现该方法     
+>>>>>>  }     
+>>>>>>}      
+>>>>>>//残废鸭 只实现Quackable（能叫不能飞）     
+>>>>>> public class DisabledDuck extends Duck implements Quackable{     
+>>>>>>     public void display(){     
+>>>>>>          System.out.println("残废鸭的颜色...");     
+>>>>>>   }     
+>>>>>>   public void quack(){     
+>>>>>>    //实现该方法     
+>>>>>>  }     
+>>>>>>}     
+>>>>>>点评:     
+>>>>>>好处:     
+>>>>>>这样已设计，我们的程序就降低了它们之间的耦合。     
+>>>>>>不足:     
+>>>>>>Flyable和 Quackable接口一开始似乎还挺不错的，解决了问题（只有会飞到鸭子才实现 Flyable），但是Java接口不具有实现代码，所以实现接口无法达到代码的复用。     
+>>>>>>第四种方法：     
+>>>>>>对上面各方式的总结:     
+>>>>>>继承的好处:让共同部分,可以复用.避免重复编程.     
+>>>>>>继承的不好:耦合性高.一旦超类添加一个新方法,子类都继承,拥有此方法,     
+>>>>>>     
+>>>>>>                    若子类相当部分不实现此方法,则要进行大批量修改.     
+>>>>>>                         继承时,子类就不可继承其它类了.     
+>>>>>>接口的好处:解决了继承耦合性高的问题.     
+>>>>>>     
+>>>>>>                     且可让实现类,继承或实现其它类或接口.     
+>>>>>>接口的不好:不能真正实现代码的复用.可用以下的策略模式来解决.     
+     
+------------------------- strategy(策略模式) -------------------------     
+我们有一个设计原则：     
+找出应用中相同之处，且不容易发生变化的东西，把它们抽取到抽象类中，让子类去继承它们；     
+找出应用中可能需要变化之处，把它们独立出来，不要和那些不需要变化的代码混在一起。 -->important.     
+现在，为了要分开“变化和不变化的部分”，我们准备建立两组类（完全远离Duck类），一个是"fly"相关的，另一个     
+是“quack”相关的，每一组类将实现各自的动作。比方说，我们可能有一个类实现“呱呱叫”，另一个类实现“吱吱     
+叫”，还有一个类实现“安静”。     
+首先写两个接口。FlyBehavior(飞行行为)和QuackBehavior（叫的行为）.     
+  public interface FlyBehavior{     
+     public void fly();          
+ }     
+ public interface QuackBehavior{     
+     public void quack();     
+ }     
+ 我们在定义一些针对FlyBehavior的具体实现。     
+ public class FlyWithWings implements FlyBehavior{     
+    public void  fly(){     
+     //实现了所有有翅膀的鸭子飞行行为。     
+   }     
+ }     
+public class FlyNoWay implements FlyBehavior{     
+     
+    public void  fly(){     
+      //什么都不做，不会飞     
+    }     
+ }        
+针对QuackBehavior的几种具体实现。     
+public class Quack implements QuackBehavior{     
+    public void quack(){     
+      //实现呱呱叫的鸭子     
+  }     
+}     
+     
+public class Squeak implements QuackBehavior{     
+    public void quack(){     
+      //实现吱吱叫的鸭子      
+  }     
+}     
+     
+public class MuteQuack implements QuackBehavior{     
+    public void quack(){     
+      //什么都不做，不会叫     
+  }     
+}     
+点评一:     
+这样的设计，可以让飞行和呱呱叫的动作被其他的对象复用，因为这些行为已经与鸭子类无关了。而我们增加一些新     
+的行为，不会影响到既有的行为类，也不会影响“使用”到飞行行为的鸭子类。     
+最后我们看看Duck 如何设计。     
+     public class Duck{        --------->在抽象类中,声明各接口,定义各接口对应的方法.     
+      FlyBehavior flyBehavior;//接口     
+      QuackBehavior quackBehavior;//接口     
+       public Duck(){}     
+       public abstract void display();     
+       public void swim(){     
+        //实现游泳的行为     
+        }     
+       public void performFly(){     
+            flyBehavior.fly();  -->由于是接口,会根据继承类实现的方式,而调用相应的方法.     
+     }     
+     public void performQuack(){     
+          quackBehavior.quack();();     
+    }     
+ }     
+看看MallardDuck如何实现。     
+----->通过构造方法,生成'飞','叫'具体实现类的实例,从而指定'飞','叫'的具体属性     
+ public class MallardDuck extends Duck{     
+       public MallardDuck {            
+        flyBehavior = new FlyWithWings ();     
+        quackBehavior = new Quack();      
+      //因为MallardDuck 继承了Duck，所有具有flyBehavior 与quackBehavior 实例变量}     
+    public void display(){     
+     //实现     
+   }     
+ }     
+ 这样就满足了即可以飞，又可以叫，同时展现自己的颜色了。     
+这样的设计我们可以看到是把flyBehavior ，quackBehavior 的实例化写在子类了。我们还可以动态的来决定。     
+  我们只需在Duck中加上两个方法。     
+     
+在构造方法中对属性进行赋值与用属性的setter的区别：     
+构造方法中对属性进行赋值：固定，不可变；     
+用属性的setter，可以在实例化对象后，动态的变化，比较灵活。     
+     
+     
+  public class Duck{     
+      FlyBehavior flyBehavior;//接口     
+      QuackBehavior quackBehavior;//接口     
+      public void setFlyBehavior(FlyBehavior flyBehavior){     
+            this.flyBehavior = flyBehavior;     
+     }     
+    public void setQuackBehavior(QuackBehavior quackBehavior  {     
+            this.quackBehavior= quackBehavior;     
+     }     
+ }     
+     
+------------------------- static Factory Method(静态工厂) -------------------------     
+(1)     
+在设计模式中,Factory Method也是比较简单的一个,但应用非常广泛,EJB,RMI,COM,CORBA,Swing中都可以看到此模式     
+的影子,它是最重要的模式之一.在很多地方我们都会看到xxxFactory这样命名的类.     
+(2)     
+基本概念：     
+FactoryMethod是一种创建性模式,它定义了一个创建对象的接口,但是却让子类来决定具体实例化哪一个类.     
+通常我们将Factory Method作为一种标准的创建对象的方法。     
+应用方面：     
+当一个类无法预料要创建哪种类的对象或是一个类需要由子类来指定创建的对象时我们就需要用到Factory Method 模     
+式了.     
+-------------------------------- singelton(单例模式) --------------------------------     
+基本概念:     
+Singleton 是一种创建性模型,它用来确保只产生一个实例,并提供一个访问它的全局访问点.对一些类来说,保证只有一个实例是很重要的,比如有的时候,数据库连接或 Socket 连接要受到一定的限制,必须保持同一时间只能有一个连接的存在.     
+运用：     
+在于使用static变量；     
+创建类对象，一般是在构造方法中，或用一个方法来创建类对象。在这里方法中，加对相应的判断即可。     
+     
+单态模式与共享模式的区别：     
+单态模式与共享模式都是让类的实例是唯一的。     
+但单态模式的实现方式是：     
+在类的内部.即在构造方法中，或静态的getInstace方法中，进行判断，若实例存在，则直接返回，不进行创建；     
+共享模式的实现方式是：     
+每次要用到此实例时，先去此hashtable中获取，若获取为空，则生成实例，且将类的实例放在一人hashtable中，若获取不为空，则直接用此实例。     
+     
+     
+     
+（2）     
+实例一：     
+public class Singleton {       
+  private static Singleton s;      
+  public static Singleton getInstance() {     
+    if (s == null)     
+      s = new Singleton();     
+    return s;     
+  }     
+}     
+// 测试类     
+class singletonTest {     
+  public static void main(String[] args) {     
+    Singleton s1 = Singleton.getInstance();     
+    Singleton s2 = Singleton.getInstance();     
+    if (s1==s2)     
+      System.out.println("s1 is the same instance with s2");     
+    else     
+      System.out.println("s1 is not the same instance with s2");     
+  }     
+}     
+singletonTest运行结果是:     
+s1 is the same instance with s2     
+（3）     
+实例二：     
+class Singleton {     
+  static boolean instance_flag = false; // true if 1 instance     
+  public Singleton() {     
+    if (instance_flag)     
+      throw new SingletonException("Only one instance allowed");     
+    else     
+      instance_flag = true; // set flag for 1 instance     
+  }     
+}     
+-------------------------------- 观察者模式(Observer) --------------------------------     
+(1)     
+基本概念:     
+观察者模式属于行为型模式，其意图是定义对象间的一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到通知并被自动更新。     
+这一个模式的关键对象是目标（Subject）和观察者（Observer）。一个目标可以有任意数目的依赖它的观察者，一旦目标的状态发生改变，所有的观察者都得到通知，作为对这个通知的响应，每个观察者都将查询目标以使其状态与目标的状态同步。     
+适用场景：     
+观察者模式，用于存在一对多依赖关系的对象间，当被依赖者变化时，通知依赖者全部进行更新。因此，被依赖者，应该有添加/删除依赖者的方法，且可以将添加的依赖者放到一个容器中；且有一个方法去通知依赖者进行更新。     
+(2)     
+思想:     
+(一)     
+建立目标(subject)与观察者(observer)接口:     
+目标(subject)接口:     
+建立一个注册观察者对象的接口; public void attach(Observer o);     
+建立一个删除观察者对象的接口; public void detach(Observer o);     
+建立一个当目标状态发生改变时,发布通知给观察者对象的接口; public void notice();     
+观察者(observer)接口:     
+建立一个当收到目标通知后的更新接口: public void update();     
+(3)     
+实例：     
+老师又电话号码，学生需要知道老师的电话号码以便于在合时的时候拨打，在这样的组合中，老师就是一个被观察者     
+（Subject），学生就是需要知道信息的观察者，当老师的电话号码发生改变时，学生得到通知，并更新相应的电话记     
+录。     
+具体实例如下:     
+Subject代码：     
+public interface Subject{     
+    public void attach(Observer o);     
+    public void detach(Observer o);     
+    public void notice();     
+}     
+Observer代码：     
+public interface Observer{     
+    public void update();     
+}     
+Teacher代码；     
+import java.util.Vector;     
+public class Teacher implements Subject{     
+    private String phone;     
+    private Vector students;     
+    public Teacher(){     
+       phone = "";     
+       students = new Vector();     
+    }     
+    public  void attach(Observer o){     
+       students.add(o);     
+    }     
+    public void detach(Observer o){     
+       students.remove(o);     
+    }     
+    public void notice(){     
+       for(int i=0;i<students.size();i++)     
+           ((Observer)students.get(i)).update();     
+    }     
+    public void setPhone(String phone){     
+       this.phone = phone;     
+       notice();    --关键     
+    }     
+    public String getPhone(){     
+       return phone;     
+    }     
+}     
+Student代码：     
+public class Student implements Observer{     
+    private String name;     
+    private String phone;     
+    private Teacher teacher;     
+    public Student(String name,Teacher t){     
+       this.name = name;     
+       teacher = t;     
+    }     
+    public void show(){     
+       System.out.println("Name:"+name+"\nTeacher'sphone:"+phone);     
+    }     
+    public void update(){     
+       phone = teacher.getPhone();     
+    }     
+}     
+Client代码：     
+package observer;     
+import java.util.Vector;     
+public class Client{         -->可以只定义目标者,观察者,另外的vector,只为了输入结果.     
+    public static void main(String[] args){     
+       Vector students = new Vector();     
+       Teacher t = new Teacher();     
+       for(int i= 0 ;i<10;i++){     
+           Student st = new Student("lili"+i,t);     
+           students.add(st);     
+           t.attach(st);     
+       }     
+       t.setPhone("88803807");     
+       for(int i=0;i<10;i++)     
+              ((Student)students.get(i)).show();     
+       t.setPhone("88808880");     
+       for(int i=0;i<10;i++)     
+              ((Student)students.get(i)).show();     
+    }     
+}     
+总结：Observer模式的最知名的应用是在MVC结构，Observer模式可以很好的应用在文档和图表程序的制作中。     
+     
+------------------------------ 迭代器模式(Iterator) -------------------------------     
+(1)     
+基本概念:     
+迭代器模式属于行为型模式，其意图是提供一种方法顺序访问一个聚合对象中得各个元素，而又不需要暴露该对象的     
+内部表示。     
+至少可以历遍first,next,previous,last,isOver,或是历遍选择符合某种条件的子元素.     
+(2)     
+结构:     
+由一个接口与一个实现类组成.     
+接口:      
+主要是定义各历遍的方法.     
+实现类:      
+需要一个计算点private int current=0 ; 以及一个容器Vector,来存在原来的进行历遍的一团东西;再对接口方法进     
+行实现.     
+(3)     
+实例:             
+Iterator接口：     
+package iterator;     
+public interface Iterator{     
+/*     
+Item:即是集合中的各对象的类型.若为String,即把所有的ITEM改为String,若为其它自定义的类,则改为各自定义的类     
+的接口,或类. --->important.       
+*/     
+    public Item first();     
+    public Item next();     
+    public boolean isDone();     
+    public Item currentItem();     
+}     
+Controller类实现了Iterator接口。     
+package iterator;     
+import java.util.Vector;     
+public class Controller implements Iterator{     
+    private int current =0;     
+    Vector channel;     
+    public Controller(Vector v){     
+       channel = v;     
+    }     
+    public Item first(){     
+       current = 0;     
+       return (Item)channel.get(current);     
+    }     
+    public Item next(){     
+       current ++;     
+       return (Item)channel.get(current);     
+    }     
+    public Item currentItem(){     
+       return (Item)channel.get(current);     
+    }     
+    public boolean isDone(){     
+       return current>= channel.size()-1;     
+    }     
+}     
+Television接口：     
+package iterator;     
+import java.util.Vector;     
+public interface Television{     
+    public Iterator createIterator();     
+}     
+HaierTV类实现了Television接口。     
+package iterator;     
+import java.util.Vector;     
+public class HaierTV implements Television{     ---对象     
+    private Vector channel;     
+    public HaierTV(){     
+       channel = new Vector();     
+       channel.addElement(new Item("channel 1")); --各元素，用VECTOR存放     
+       channel.addElement(new Item("channel 2"));     
+       channel.addElement(new Item("channel 3"));     
+       channel.addElement(new Item("channel 4"));     
+       channel.addElement(new Item("channel 5"));     
+       channel.addElement(new Item("channel 6"));     
+       channel.addElement(new Item("channel 7"));     
+    }     
+    public Iterator createIterator(){     
+       return new Controller(channel);          --把这个VECTOR放到迭代器中构造方法中去     
+    }     
+}     
+Client客户端：     
+package iterator;     
+public class Client{     
+    public static void main(String[] args){     
+       Television tv = new HaierTV();     
+       Iterator it =tv.createIterator();     
+       System.out.println(it.first().getName());     
+       while(!it.isDone()){     
+           System.out.println(it.next().getName());     
+       }     
+    }     
+}     
+Item类的接口：                   
+package iterator;     
+public class Item{     
+    private String name;     
+    public Item(String aName){     
+       name = aName;     
+    }     
+    public String getName(){     
+       return name;     
+    }     
+}     
+------------------------------ 外观模式(Facade) -------------------------------     
+(1)     
+外观模式属于结构型模式，Facade模式定义了一个高层接口，这个接口使得这一子系统更加容易使用。     
+外观模式的主要用途就是为子系统的复杂处理过程提供方便的调用方法，使得子系统更加容易被使用。     
+-->将复杂的过程包含在里面,提供一个简单的应用接口即可.     
+(2)     
+例如在一个泡茶的过程中，需要作如下的工作：烧开水，准备茶叶，把茶叶放在被子里，把烧开的水放到茶杯中，只     
+有经过这些过程之后才能泡出好的茶叶来。这是一个常用的步骤，80%的泡茶步骤都是这个样子的，可以把这些动作串     
+联起来，形成一个整体的步骤.如下例的MakeACuppa()，使用了facade的模式,这样在调用步方法时就比较方便。这便     
+是外观模式，里面的细节被屏蔽掉了。     
+public class TeaCup{.....}     
+public class TeaBag{.....}     
+public class Water{.....}     
+public class FacadeCuppaMaker{     
+    private boolean TeaBagIsSteeped;     
+    public FacadeCuppaMaker(){     
+       System.out.println("FacadeCuppaMaker 准备好冲茶了");     
+    }     
+    public TeaCup makeACuppa(){     
+       TeaCup cup = new TeaCup();     
+       TeaBag teaBag= new TeaBag();     
+       Water water = new Water();     
+       cup.addFacadeTeaBag(teaBag);     
+       water.boilFacadeWater();     
+       cup.addFacadeWater(water);     
+       cup.steepTeaBag();     
+       return cup;     
+    }     
+}     
+------------------------------ 适配器模式(adapter) -------------------------------     
+(1)     
+适配器模式的意图是将一个已存在的类/接口进行复用,将其转换/具体化成客户希望的另外的一个类/接口。     
+(2)     
+如何实例复用：     
+将要进行复用的类，放到目标类的构造方法中，进行实例化，然后在目标类的相应方法中，进行调用，修改原来方法     
+中的参数，或添加相应的逻辑。即复用了已有类的原来方法。     
+要被复用的类：     
+public class Adaptee{     
+    public long getPower(long base,long exp){     
+       long result=1;     
+       for(int i=0;i<exp;i++)     
+           result*=base;     
+       return result;     
+    }     
+}     
+目标类：--也可直接实现，不用接口。     
+public interface Target{     
+    public long get2Power(long exp);     
+}     
+public class Adapter implements Target{     
+    private Adaptee pt;     
+    public Adapter(){     
+       pt = new Adaptee();     
+    }     
+    public long get2Power(long exp){     
+       return pt.getPower(2,exp);   ---修改原来方法中的参数，     
+    }     
+}     
+(3)     
+又如：     
+在SCM中添加的方法:     
+已有接口:     
+public boolean updateRecordStates(Double recordId,Double tableNameMapping,int state,boolean     
+subRecordUpdate) throws RemoteException;     
+已有实现类:     
+public boolean updateRecordStates(Double recordId,Double tableNameMapping,int state,boolean     
+subRecordUpdate) throws RemoteException     
+{     
+return moveTable.updateRecordStates(recordId,tableNameMapping,state,subRecordUpdate);      
+}     
+若采用适配器模式:     
+接口:     
+public boolean updateStatesAdapterForSelfPanel(Double recordId,Double tableNameMapping,int state)     
+throws RemoteException;     
+实现类:     
+public boolean updateStatesAdapterForSelfPanel(Double recordId,Double tableNameMapping,int state)     
+throws RemoteException     
+{     
+ return this.updateRecordStates(recordId,tableNameMapping,state,false);     
+}     
+------------------------------ 代理模式(Proxy) -------------------------------     
+(1)     
+代理的好处:     
+--->是可以在间接访问对象的同时,要其前或后,添加其它的逻辑代码.     
+--->对原来逻辑进行添加其它逻辑,最终生成新的逻辑.即:对类的方法添加一些额外的逻辑,生成新的方法逻辑.     
+(2)     
+静态代理:      
+-->一个原类与一个代理类要一一对应。     
+-->两者都实现共同的接口或继承相同的抽象类；     
+-->只是在代理类中,实例化原类，在原类方法的前后添加新的逻辑。     
+如下:     
+抽象角色：     
+abstract public class Subject     
+{     
+    abstract public void request();     
+}     
+真实角色：     
+public class RealSubject extends Subject     
+{     
+       public void request()     
+       {     
+              System.out.println("From real subject.");     
+       }     
+}     
+代理角色：     
+public class ProxySubject extends Subject     
+{     
+    private RealSubject realSubject;  //以真实角色作为代理角色的属性     
+       public ProxySubject()     
+       { realSubject=new RealSubject(); }     
+       public void request()  //与原方法名相同     
+       {     
+        preRequest();     
+        realSubject.request();  //此处执行真实对象的request方法     
+        postRequest();     
+      }     
+    private void preRequest()     
+    {     
+        //something you want to do before requesting     
+    }     
+    private void postRequest()     
+    {     
+        //something you want to do after requesting     
+    }     
+}     
+客户端调用：     
+Subject sub=new ProxySubject();     
+Sub.request();     
+(3)     
+动态代理类     
+Java动态代理类位于Java.lang.reflect包下，一般主要涉及到以下两个类：     
+1)     
+Interface InvocationHandler：该接口中仅定义了一个方法：invoke(Object obj,Method method, Object[] args)     
+。在实际使用时，第一个参数obj一般是指代理类，method是被代理的方法，args为该方法的参数数组。这个抽象方法     
+在代理类中动态实现。     
+2)     
+Proxy：该类即为动态代理类，其中主要包含以下内容：     
+Static Object newProxyInstance(ClassLoader loader, Class[] interfaces, InvocationHandler h)：返回代理类     
+的一个实例，返回后的代理类可以当作被代理类使用。     
+所谓Dynamic Proxy是这样一种class：它是在运行时生成的class，在生成它时你必须提供一组interface给它，然后     
+该class就宣称它实现了这些 interface。     
+3)     
+在使用动态代理类时，我们必须实现InvocationHandler接口，     
+public interface Subject     
+{     
+    public void request();     
+}     
+具体角色RealSubject：同上；     
+代理角色：     
+import java.lang.reflect.Method;     
+import java.lang.reflect.InvocationHandler;     
+public class DynamicSubject implements InvocationHandler {     
+  private Object sub;     
+  public DynamicSubject(Object obj) {     
+    sub = obj;     
+  }     
+  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {     
+    System.out.println("before calling " + method);     
+    method.invoke(sub,args);     
+    System.out.println("after calling " + method);     
+    return null;     
+  }     
+}     
+==>     
+method.invoke(sub,args);     
+其实就是调用被代理对象的将要被执行的方法，方法参数sub是实际的被代理对象，args为执行被代理对象相应操作所     
+需的参数。通过动态代理类，我们可以在调用之前或之后执行一些相关操作。     
+客户端：     
+import java.lang.reflect.InvocationHandler;     
+import java.lang.reflect.Proxy;     
+import java.lang.reflect.Constructor;     
+import java.lang.reflect.Method;     
+public class Client     
+{     
+    static public void main(String[] args) throws Throwable     
+    {     
+      RealSubject rs = new RealSubject();  //在这里指定被代理类     
+      InvocationHandler ds = new DynamicSubject(rs);  //初始化代理类     
+      Subject subject = (Subject) Proxy.newProxyInstance(rs.getClass().getClassLoader(),rs.getClass     
+().getInterfaces(),ds );     
+      subject.request();     
+}     
+5)     
+实例二：     
+package dynamicProxy;     
+public interface Work {     
+ public void startWork();     
+}     
+package dynamicProxy;     
+public class JasonWork implements Work {     
+ public void startWork() {     
+  System.out.println("jason start to work...");     
+ }     
+}     
+public interface Play {     
+ public void startPlay();     
+}     
+public class JasonPlay implements Play {     
+ public void startPlay() {     
+  System.out.println("jason start to play...");     
+ }     
+}     
+public class Test {     
+public static void main(String[] args)      
+{     
+     
+            JasonWork work=new JasonWork();     
+                InvocationHandler dynamicProxy=new DynamicProxy(work);     
+                Work jasonproxy=(Work)Proxy.newProxyInstance(work.getClass().getClassLoader(),     
+work.getClass().getInterfaces(), dynamicProxy);     
+     
+            jasonproxy.startWork();     
+  JasonPlay play=new JasonPlay();     
+  InvocationHandler dynamicProxy=new DynamicProxy(play);     
+  Play jasonproxy=(Play)Proxy.newProxyInstance(play.getClass().getClassLoader(),     
+play.getClass().getInterfaces(), dynamicProxy);     
+  jasonproxy.startPlay();     
+ }     
+}     
+===>动态代理类,可以与任何类型的真实类(work/play),进行结合,进行动态的代理.     
+     
+     
+     
+------------------------------ 状态模式(state) -------------------------------     
+(1)     
+State模式定义：     
+不同的状态,不同的行为; 或者说,每个状态有着相应的行为.     
+适用场合：     
+State模式在实际使用中比较多,适合"状态的切换".因为我们经常会使用If elseif else 进行状态切换, 如果针对状态的这样判断切换反复出现,我们就要联想到是否可以采取State模式了.     
+-->适合于内部状态,不断循环变化的.     
+(2)     
+一个state,包括两部分: 对象 + 对象内部的属性(属性接口+具体属性)     
+一个对象,要有其属性,以及其setter,getter.且设置好其初始状态+一个调用显示状态的方法(里面就是状态调用自身的显示方法).     
+一个属性接口,应该有一个执行的方法.     
+一个具体属性,须包含对象进去,实现方法中,须设置对象下一个要显示的属性-->从而在对象下次调用方法时,其属性值会变化.     
+     
+状态模式与观察者模式的区别：     
+状态模式，也跟观察者模式一样，是一对多的模式。但观察者模式是“一”变了，所有的“多”也会更新。     
+状态模式，强调的是：“多”是“一”的各个状态，“一”的各个状态，进行不断的循环。     
+     
+如何建立一与多的关系：     
+“多”，都是实现一个接口的。所以，在“一”的类中，声明的是“多”的接口；若“多”中要建立与“一”的关系，只须直接在类中声明“一”即可。     
+     
+     
+(3)     
+代码:     
+public interface Color {     
+ public void show();     
+}     
+package state;     
+class Light     
+{     
+ Color color;     
+ public Color getColor() {     
+  return color;     
+ }     
+ public void setColor(Color color) {     
+  this.color = color;     
+ }     
+     
+ public Light()     
+ {     
+  color=new RedColor(this);     
+ }     
+     
+ public void showColor()     
+ {     
+  color.show();     
+ }     
+     
+}     
+class RedColor implements Color     
+{     
+ Light light;     
+ public RedColor(Light light)     
+ {     
+  this.light=light;     
+ }     
+     
+ public void show()     
+ {     
+ System.out.println("the color is red,the car must stop !");     
+ System.out.println("write down all logic shoud do this in this state.....");     
+  light.setColor(new GreenColor(light));     
+ }     
+}     
+class GreenColor implements Color     
+{     
+ Light light;     
+ public GreenColor(Light light)     
+ {     
+  this.light=light;     
+ }     
+     
+ public void show()     
+ {     
+ System.out.println("the color is green,the car can run !");     
+ System.out.println("write down all logic shoud do this in this state.....");     
+  light.setColor(new YellowColor(light));     
+ }     
+}     
+class YellowColor implements Color     
+{     
+ Light light;     
+ public YellowColor(Light light)     
+ {     
+  this.light=light;     
+ }     
+     
+ public void show()     
+ {     
+ System.out.println("the color is yellow,the car shoud stop !");     
+ System.out.println("write down all logic shoud do this in this state.....");     
+  light.setColor(new RedColor(light));     
+ }     
+}     
+public class CarLight {     
+ public static void main(String[] args) {     
+  Light light=new Light();     
+     
+  //初始调用为红灯     
+  light.showColor();     
+  //再调用为绿灯     
+  light.showColor();     
+  //再调用为黄灯     
+  light.showColor();     
+  //不断调用,不断循环.       
+ }     
+}     
+     
+     
+     
+------------------------------ 享元模式(Flyweight) -------------------------------     
+(1)     
+主要用于创建对象时，运用共享技术，减少对象对内存的占用.一个提高程序效率和性能的模式,会大大加快程序的运     
+行速度.     
+就是说在一个系统中如果有多个相同的对象，那么只共享一份就可以了，不必每个都去实例化一个对象。     
+Flyweight(享元)模式中常出现Factory模式。Flyweight的内部状态是用来共享的,Flyweight factory负责维护一个对     
+象存储池（Flyweight Pool）来存放内部状态的对象。     
+Flyweight的关键思路,在于:     
+新建对象时:     
+先到hashtable中进行获取-->判断取得对象是否为空-->若是,则新建此对象,且放回hashtable -->若存在,则共享原来     
+的对象.     
+(2)     
+实例: (与静态工厂模式进行对比)     
+public interface Car {     
+ public void showCarName();     
+}     
+class BMWCar implements Car     
+{     
+ public void showCarName()     
+ {     
+  System.out.println("this is the BMWCar .");     
+ }     
+}     
+class FordCar implements Car     
+{     
+ public void showCarName()     
+ {     
+  System.out.println("this is the FordCar .");     
+ }     
+}     
+class CarFactory     
+{     
+ public static Car car;     
+ public static Car getCar(String name)     
+ {     
+  if("BMW".equals(name))     
+  {     
+   car = new BMWCar();     
+  }     
+  if("Ford".equals(name))     
+  {     
+   car =  new FordCar();     
+  }     
+  return car;     
+ }     
+}     
+class CarFlyWeightFactory     
+{     
+    public  Car car;     
+    private Hashtable<String,Car> carPool=new Hashtable<String,Car>();     
+ public  Car getCar(String name)     
+ {     
+  if("BMW".equals(name))     
+  {     
+   car=carPool.get(name);     
+   if(car==null)     
+   {     
+    car=new BMWCar();     
+    carPool.put(name, car);     
+   }     
+  }     
+     
+  if("Ford".equals(name))     
+  {     
+   car=carPool.get(name);     
+   if(car==null)     
+   {     
+    car=new FordCar();     
+    carPool.put(name, car);     
+   }     
+  }     
+  return car;     
+ }     
+     
+    public int getNumber(){ return carPool.getSize(); }     
+}     
+     
+public class Test {     
+ public static void main(String[] args) {     
+  CarFlyWeightFactory carFlyWeightFactory=new CarFlyWeightFactory();     
+  Car carf1=carFlyWeightFactory.getCar("Ford");     
+  carf1.showCarName();     
+  Car carf2=carFlyWeightFactory.getCar("Ford");     
+  carf2.showCarName();     
+  if(carf1==carf2)     
+  {     
+   System.out.println("同一部车来的");     
+  }     
+  else     
+  {     
+   System.out.println("不同一部车来的");     
+  }     
+  System.out.println("车的数量是:"+carFlyWeightFactory.getNumber());     
+ }     
+}     
+输出:     
+this is the FordCar .     
+this is the FordCar .     
+同一部车来的     
+     
+---------------------- 职责链模式(Chain of Responsibility) -----------------------     
+(1)     
+Chain of Responsibility职责链模式：     
+为了避免请求的发送者和接收者之间的耦合关系，使多个接受对象都有机会处理请求。将这些对象连成一条链，并沿着这条链传递该请求，直到有一个对象处理它为止。     
+-->     
+要沿着链转发请求，并保证接受者为隐式的，每个链上的对象都有一致的处理请求和访问链上后继者的接口(即如下实例中,在自己方法中再调用一次相同的方法)。     
+(2)     
+public class Boy {     
+     
+ private boolean hasCar; // 是否有车     
+ private boolean hasHouse; // 是否有房     
+ private boolean hasResponsibility; // 是否有责任心     
+ public Boy() {     
+ }     
+ public Boy(boolean hasCar, boolean hasHouse, boolean hasResponsibility) {     
+  this.hasCar = hasCar;     
+  this.hasHouse = hasHouse;     
+  this.hasResponsibility = hasResponsibility;     
+ }     
+ public boolean isHasCar() {     
+  return hasCar;     
+ }     
+ public void setHasCar(boolean hasCar) {     
+  this.hasCar = hasCar;     
+ }     
+ public boolean isHasHouse() {     
+  return hasHouse;     
+ }     
+ public void setHasHouse(boolean hasHouse) {     
+  this.hasHouse = hasHouse;     
+ }     
+ public boolean isHasResponsibility() {     
+  return hasResponsibility;     
+ }     
+ public void setHasResponsibility(boolean hasResponsibility) {     
+  this.hasResponsibility = hasResponsibility;     
+ }     
+}     
+public interface Handler {     
+  public void handleRequest(Boy boy);     
+}     
+public class HouseHandler implements Handler {     
+     
+ private Handler handler;     
+ public HouseHandler(Handler handler) {     
+  this.handler = handler;     
+ }     
+ public Handler getHandler() {     
+  return handler;     
+ }     
+ public void setHandler(Handler handler) {     
+  this.handler = handler;     
+ }     
+ public void handleRequest(Boy boy) {     
+  if (boy.isHasHouse()) {     
+   System.out.println("没想到吧，我还有房子");     
+  } else {     
+   System.out.println("我也没有房");     
+   handler.handleRequest(boy);     
+  }     
+ }     
+}     
+public class CarHandler implements Handler {     
+ private Handler handler;     
+ public CarHandler(Handler handler) {     
+  this.handler = handler;     
+ }     
+ public Handler getHandler() {     
+  return handler;     
+ }     
+ public void setHandler(Handler handler) {     
+  this.handler = handler;     
+ }     
+ public void handleRequest(Boy boy) {     
+  if (boy.isHasCar()) {     
+   System.out.println("呵呵，我有辆车");     
+  } else {     
+   System.out.println("我没有车");     
+   handler.handleRequest(boy);     
+  }     
+ }     
+}     
+public class ResponsibilityHandler implements Handler {     
+ private Handler handler;     
+ public ResponsibilityHandler(Handler handler) {     
+  this.handler = handler;     
+ }     
+ public Handler getHandler() {     
+  return handler;     
+ }     
+ public void setHandler(Handler handler) {     
+  this.handler = handler;     
+ }     
+ public void handleRequest(Boy boy) {     
+  if (boy.isHasResponsibility()) {     
+   System.out.println("我只有一颗带Responsibility的心");     
+  } else {     
+   System.out.println("更没有责任心");     
+   handler.handleRequest(boy);     
+  }     
+ }     
+}     
+public class Girl {     
+     
+ public static void main(String[] args) {     
+  // 这个boy没有车，也没有房，不过很有责任心     
+  Boy boy = new Boy(false, false, true);     
+     
+            // 也可以使用setHanlder方法     
+  Handler handler = new CarHandler(new HouseHandler(     
+    new ResponsibilityHandler(null)));     
+  handler.handleRequest(boy);     
+ }     
+}     
+==>     
+如何实例使请求沿着链在各接受对象中传递,当没被第一个接受对象接受时,会传递给第二个对象,若被第一个对象接受了,则不传递下去:     
+1.各具体的接受对象采用这样的构造方法:     
+public CarHandler(Handler handler) { this.handler = handler; }     
+2.各具体的接受对象实现接口的方法handleRequest()中.在调用时,若被接受,则执行true的内容,若不被接受,则执行false的内容,并继续调用再调用handleRequest()方法.     
+3.在最后的测试类中,生成具体的handler时,用多层包含的形式.这样,在调用了上一层car的方法后,会调用house的相应方法,最后再调用ResponsibilityHandler的方法.     
+==>前两个handler是采用了有参数的构造方法,最后一个是采用了为NULL的构造方法     
+     
+------------------------------ 备忘录模式(Memento) -------------------------------     
+(1)     
+备忘录模式属于行为型模式，其意图是在不破坏封装性的前提下，捕获一个对象的内部状态，并在该对象之外保存这     
+个状态，这样以后就可以将对象恢复到原先保存的状态。     
+(2)     
+实例如下:     
+有一个对象Employee.除了属性外,还需要一个保存,还原状态的方法.     
+有一个对象Memento,用来记录Employee每一个时刻的状态,     
+CareTaker,用来保存,拿回Memento.需要一个保存,还原状态的方法.->需要一个指针,一个容器.     
+package memento;     
+public class Memento{     
+    String name;     
+    int age;     
+    public Memento(String name,int age){     
+       this.name = name;     
+       this.age = age;     
+    }     
+}     
+Employee模式：     
+package memento;     
+public class Employee{     
+    private String name;     
+    private int age;     
+    public Employee(String aName,int aAge){     
+       name = aName;     
+       age = aAge;     
+    }     
+    public void setName(String aName){     
+       name = aName;     
+    }     
+    public void setAge(int aAge){     
+       age = aAge;     
+    }     
+    public Memento  saveMemento(){     
+       return new Memento(name,age);     
+    }     
+    public void restoreMemento(Memento memento){     
+       age = memento.age;     
+       name = memento.name;     
+    }     
+    public int getAge(){     
+       return age;     
+    }     
+    public String getName(){     
+       return name;     
+    }     
+}     
+CareTaker代码：     
+package memento;     
+import java.util.Vector;     
+public class CareTaker{     
+    private Vector v;     
+    private int  current;     
+    public CareTaker(){     
+       current = -1;     
+       v = new Vector();     
+    }     
+    public void setMemento(Memento mem){     
+       current ++;     
+       v.add(mem);     
+    }     
+    public Memento getMemento(){     
+       if(current>0){     
+           current --;     
+           return(Memento) v.get(current);     
+       }     
+       return null;     
+    }     
+}     
+Client代码：     
+package memento;     
+public class Client{     
+    public static void show(Employee e){     
+       System.out.println("-----------------------------------");     
+       System.out.println("Name:"+e.getName());     
+       System.out.println("Age:" + e.getAge());     
+       System.out.println("-----------------------------------");     
+    }     
+    public static void main(String[] args){     
+       Employee e = new Employee("lili",25);     
+       CareTaker ct = new CareTaker();     
+       show(e);     
+       ct.setMemento(e.saveMemento());     
+       e.setName("litianli");     
+       show(e);     
+       ct.setMemento(e.saveMemento());     
+       e.setAge(45);     
+       show(e);     
+       ct.setMemento(e.saveMemento());     
+       //restore     
+       e.restoreMemento(ct.getMemento());     
+       show(e);     
+       e.restoreMemento(ct.getMemento());     
+       show(e);     
+    }     
+}     
+     
 
