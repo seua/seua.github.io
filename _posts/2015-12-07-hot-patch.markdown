@@ -1,0 +1,17 @@
+---
+layout: post
+---
+
+安卓热补丁动态修复框架：
+https://github.com/alibaba/dexposed 阿里开源的框架 
+https://github.com/dodola/HotFix
+https://github.com/jasonross/Nuwa
+https://github.com/bunnyblue/DroidFix
+
+
+原理都来自：安卓App热补丁动态修复技术介绍(http://www.jianshu.com/p/56facb3732a7)，以及Android dex分包方案(https://m.oschina.net/blog/308583)
+
+
+客户端例子实现：https://github.com/fengcunhan/Hotpatch-Sample 服务器简易实现：https://github.com/fengcunhan/Hotpatch-SimpleServer
+
+美团 美团Android DEX自动拆包及动态加载简介（http://tech.meituan.com/mt-android-auto-split-dex.html）
