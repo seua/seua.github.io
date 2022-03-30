@@ -89,7 +89,7 @@ vrrp_instance用来定义对外提供服务的VIP区域及其相关属性。
 vrrp_rsync_group用来定义vrrp_intance组，使得这个组内成员动作一致。举个例子来说明一下其功能：
 
 两个vrrp_instance同属于一个vrrp_rsync_group，那么其中一个vrrp_instance发生故障切换时，另一个vrrp_instance也会跟着切换（即使这个instance没有发生故障）。
-
+```
 vrrp_sync_group VG_1 {
     group {
         inside_network   # name of vrrp_instance (below)
@@ -142,6 +142,7 @@ vrrp_instance VI_1 {
     notify <STRING>|<QUOTED-STRING>
     smtp_alert
 }
+```
 notify_master/backup/fault 分别表示切换为主/备/出错时所执行的脚本。
 
 notify 表示任何一状态切换时都会调用该脚本，并且该脚本在以上三个脚本执行完成之后进行调用，keepalived会自动传递三个参数（$1 = "GROUP"|"INSTANCE"，$2 = name of group or instance，$3 = target state of transition(MASTER/BACKUP/FAULT)）。
@@ -167,12 +168,13 @@ garp_master_delay 当切为主状态后多久更新ARP缓存，默认5秒。
 virtual_router_id 取值在0-255之间，用来区分多个instance的VRRP组播。
 
 注意： 同一网段中virtual_router_id的值不能重复，否则会出错，相关错误信息如下。  
-
+```
 Keepalived_vrrp[27120]: ip address associated with VRID not present in received packet :
 one or more VIP associated with VRID mismatch actual MASTER advert
 bogus VRRP packet received on eth1 !!!
 receive an invalid ip number count associated with VRID!
 VRRP_Instance(xxx) ignoring received advertisment...
+```
 可以用这条命令来查看该网络中所存在的vrid：tcpdump -nn -i any net 224.0.0.0/8
 
 priority 用来选举master的，要成为master，那么这个选项的值最好高于其他机器50个点，该项取值范围是1-255（在此范围之外会被识别成默认值100）。
@@ -197,7 +199,7 @@ preempt_delay master启动多久之后进行接管资源（VIP/Route信息等）
 virtual_server_group和virtual_server区域
 
 virtual_server_group一般在超大型的LVS中用到，一般LVS用不过这东西，因此不多说。
-
+```
 virtual_server IP Port {
     delay_loop <INT>
     lb_algo rr|wrr|lc|wlc|lblc|sh|dh
@@ -234,6 +236,7 @@ virtual_server IP Port {
         }
     }
 }
+```
 delay_loop 延迟轮询时间（单位秒）。
 
 lb_algo 后端调试算法（load balancing algorithm）。
@@ -318,4 +321,5 @@ keepalived的文档也很旧了，一直都找不到合适的文档，之前我�
 参考资料
 
 1.http://www.linuxvirtualserver.org/
+
 2.http://www.keepalived.org/LVS-NAT-Keepalived-HOWTO.html
